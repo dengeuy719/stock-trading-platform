@@ -28,7 +28,7 @@ bool querySymbol(connection* C, string& sym_name){
     return res.size()!=0;
 }
 
-bool queryAccount(connection* C, const char* id){
+bool queryAccount(connection* C, long id){
     nontransaction N(*C);
     stringstream ss;
     ss << "SELECT * FROM ACCOUNT WHERE ACCOUNT_ID=" << N.quote(id) << ";";

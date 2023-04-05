@@ -1,12 +1,12 @@
 #include "server.h"
 
-void run(){
+void Server::run(){
     memset(&host_info, 0, sizeof(this->host_info));
     host_info.ai_family   = AF_UNSPEC;
     host_info.ai_socktype = SOCK_STREAM;
     host_info.ai_flags    = AI_PASSIVE;
 
-    status = getaddrinfo(NULL, std::to_string(port).c_str(), &host_info, &host_info_list);
+    status = getaddrinfo(NULL, std::string(port).c_str(), &host_info, &host_info_list);
     if (status != 0) {
         std::cerr << "Error: cannot get address info for host" << std::endl;
         return;
@@ -33,7 +33,7 @@ void run(){
     }
 }
 
-std::pair<int,char*> server::accept_connections(){
+std::pair<int,char*> Server::accept_connections(){
     struct sockaddr_storage socket_addr;
     socklen_t socket_addr_len = sizeof(socket_addr);
     int client_connection_fd;

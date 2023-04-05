@@ -1,4 +1,4 @@
-#pragma once
+
 #include<pqxx/pqxx>
 #include<vector>
 #include<string>
@@ -112,7 +112,7 @@ int main(){
     pthread_mutex_t mutex;
     while(true){
         pthread_mutex_lock(&mutex);
-        pair<int,char*> client = stoke_server.accept_connection();
+        pair<int,char*> client = stoke_server.accept_connections();
         int client_fd = client.first;
         string ip(client.second);
         cout << "Connected with the client from "<< client_fd << " " << ip << endl;

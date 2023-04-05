@@ -21,7 +21,7 @@ public:
     Server():status(0),socket_fd(0),host_info_list(NULL),hostname(NULL),port("12345"){}
 
     void run();
-    std::pair<int,char*> accept_connection();
+    std::pair<int,char*> accept_connections();
 
     ~Server(){
         close(socket_fd);
