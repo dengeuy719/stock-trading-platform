@@ -78,7 +78,7 @@ int main(){
     create_querys.back() = move(orders.str());
 
     stringstream cancel;
-    cancel << "CREATE TABLE CANCEL ( CAN_ID BIGSERIAL PRIMARY KEY, TRAN_ID BIGINT, CAN_TIME BIGINT;"
+    cancel << "CREATE TABLE CANCEL ( CAN_ID BIGSERIAL PRIMARY KEY, TRAN_ID BIGINT, CAN_TIME BIGINT, "
     << "FOREIGN KEY (TRAN_ID) REFERENCES TRANSACTIONS(TRAN_ID) ON DELETE SET NULL ON UPDATE CASCADE);";
     create_querys.emplace_back();
     create_querys.back() = move(cancel.str());
@@ -108,6 +108,7 @@ int main(){
     Server stoke_server;
     stoke_server.run();
 
+    cout << "server started" << endl;
     // listen to user's connection and allocate threads
     pthread_mutex_t mutex;
     while(true){
