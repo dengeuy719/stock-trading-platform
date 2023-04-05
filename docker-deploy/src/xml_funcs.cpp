@@ -1,8 +1,8 @@
 #include "xml_funcs.h"
 
 void* handler(void* p){
-    // int client_fd = ((std::pair<int,char*>*)p)->first;
-    // std::string ip(((std::pair<int,char*>*)p)->second);
+    int client_fd = ((std::pair<int,char*>*)p)->first;
+    std::string ip(((std::pair<int,char*>*)p)->second);
     connection *C;
 
     try{
@@ -19,20 +19,25 @@ void* handler(void* p){
     }
 
     // recv client's xml request
-    //TiXmlDocument* doc = recv_xml(client_fd);
+    TiXmlDocument* doc = recv_xml(client_fd);
+    TiXmlPrinter printer;
+    printer.SetIndent("    ");
+    doc->Accept(&printer);
+
+    std::cout << printer.CStr() << std::endl;
     //TiXmlDocument* doc=new TiXmlDocument("~/ece568/hw4/docker-deploy/src/input.xml");
-    TiXmlDocument doc("input.xml");
-    bool success = doc.LoadFile();
+    //TiXmlDocument doc("input.xml");
+    //bool success = (*doc).LoadFile();
 
 
-    if(!success){
-        cerr << "error loading xml" << endl;
-        cerr << doc.ErrorDesc() << endl;
-        return nullptr;
-    }
+    // if(!success){
+    //     cerr << "error loading xml" << endl;
+    //     cerr << (*doc).ErrorDesc() << endl;
+    //     return nullptr;
+    // }
     cout << "open xml success" << endl;
     // get root
-    TiXmlElement* root = doc.RootElement();
+    TiXmlElement* root = (*doc).RootElement();
     string req_root = root->Value();
     
     cout << "get root" << endl;
@@ -211,15 +216,21 @@ void* handler(void* p){
     }
 
     // send response back
-
-    // if(send(client_fd,&res_root,sizeof(res_root),0)!=sizeof(res_root)){
-    //     std::cerr << "Error sending" << std::endl;
-    // }
+    TiXmlPrinter printer1;
+    printer1.SetIndent("    ");
+    response.Accept(&printer1);
+    std::cout <<"printer1.Size(): " <<printer1.Size() << std::endl;
+    //
+    const string sendStr = printer1.CStr();
+    std::cout <<"sendStr: " << sendStr << std::endl;
+    if(send(client_fd,sendStr.data(),printer1.Size(),0)!=printer1.Size()){
+        std::cerr << "Error sending" << std::endl;
+    }
     response.SaveFile("output.xml");
     response.Clear();
-    doc.Clear();
+    (*doc).Clear();
     C->disconnect();
-    //close(client_fd);
+    close(client_fd);
     delete C;
     return nullptr;
 }
@@ -236,10 +247,12 @@ TiXmlDocument* recv_xml(int fd){
     string msg(ori_msg,recv_len);
     size_t pos = msg.find('\n');
     string slen = msg.substr(0,pos);
+    //std::cout << 
     int len = stoi(slen);
     msg = msg.substr(pos+1);
-
+    
     TiXmlDocument* doc = new TiXmlDocument();
     doc->Parse(msg.c_str());
+    std::cout << recv_len << ", "<< msg << std::endl;
     return doc;
 }
