@@ -193,7 +193,7 @@ TiXmlDocument* recv_xml(int fd){
     memset(ori_msg,0,sizeof(ori_msg));
     int recv_len = recv(fd, &ori_msg, sizeof(ori_msg), 0);
     if(recv_len<=0){
-        std::cerr << "Error receiving msg" << std::endl;;
+        std::cerr << "Error receiving msg" << std::endl;
         return nullptr;
     }
 
