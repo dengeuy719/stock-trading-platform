@@ -7,7 +7,12 @@ bool createAccount(connection* C, const char* char_id, const char* char_balance)
     long id = atol(char_id);
     work W(*C);
     stringstream ss;
-    ss << "INSERT INTO ACCOUNT (ACCOUNT_ID, BALANCE) " << "VALUES (" << W.quote(id) << ", " << W.quote(balance)<< ");";
+    // if already exist, return error
+    bool flag = queryAccount(W, atol(char_id));
+    if(flag){
+        return false;
+    }
+    ss << "INSERT INTO ACCOUNT (ACT_ID, ACT_BALANCE) " << "VALUES (" << W.quote(id) << ", " << W.quote(balance)<< ");";
     try{
         W.exec(ss.str());
         W.commit();
@@ -20,43 +25,43 @@ bool createAccount(connection* C, const char* char_id, const char* char_balance)
     return true;
 }
 
-bool querySymbol(connection* C, string& sym_name){
-    nontransaction N(*C);
+bool querySymbol(work& W, string& sym_name){
     stringstream ss;
-    ss << "SELECT * FROM SYMBOL WHERE SYMBOL_NAME=" << N.quote(sym_name) << ";";
-    result res(N.exec(ss.str()));
+    ss << "SELECT * FROM SYMBOL WHERE SYM_NAME=" << W.quote(sym_name) << ";";
+    
+    result res(W.exec(ss.str()));
     return res.size()!=0;
+    
 }
 
-bool queryAccount(connection* C, long id){
-    nontransaction N(*C);
+bool queryAccount(work& W, long id){
     stringstream ss;
-    ss << "SELECT * FROM ACCOUNT WHERE ACCOUNT_ID=" << N.quote(id) << ";";
-    result res(N.exec(ss.str()));
+    ss << "SELECT * FROM ACCOUNT WHERE ACT_ID=" << W.quote(id) << ";";
+    result res(W.exec(ss.str()));
     return res.size()!=0;
 }
 bool createSymbol(connection* C, const char* char_sym, const char* char_id, const char* char_num){
     int num = atoi(char_num);
     long id = atol(char_id);
     string sym(char_sym);
-    if(sym.size()==0||!queryAccount(C,id)){
+    work W(*C);
+    if(sym.size()==0||!queryAccount(W,id)){
         // empty sym name or null account
         return false;
     }
     // create a new one
-    if(!querySymbol(C,sym)){
-        work W(*C);
+    
+    if(!querySymbol(W,sym)){
         stringstream ss;
-        ss << "INSERT INTO SYMBOL (SYMBOL_NAME) " << "VALUES (" << W.quote(sym) << ");";
-        try{
-            W.exec(ss.str());
-            W.commit();
-        }
-        catch(const exception& e){
-            cerr << e.what() << endl;
-            return false;
-        }
-        return true;
+        ss << "INSERT INTO SYMBOL (SYM_NAME) " << "VALUES (" << W.quote(sym) << ");";
+        W.exec(ss.str());
+    }
+    try{
+        W.commit();
+    }
+    catch(const exception& e){
+        cerr << e.what() << endl;
+        return false;
     }
     return true;
 }
@@ -65,11 +70,12 @@ void createPosition(connection* C, const char* char_sym, const char* char_id, co
     work W(*C);
     stringstream ss;
     string sym(char_sym);
-    string id(char_id);
-    string num(char_num);
+    long id = atol(char_id);
+    double num = atof(char_num);
     ss << "INSERT INTO POSITION (SYM_NAME, ACT_ID, POS_AMOUNT) " << "VALUES ("
-    << W.quote(sym)<< ", " << W.quote(id) << ", " << W.quote(num) << ")"
-    << "DO UPDATE SET AMOUNT = POSITION.AMOUNT + " << W.quote(num) << ";";
+    << W.quote(sym)<< ", " << W.quote(id) << ", " << W.quote(num) << ") "
+    <<" ON CONFLICT ON CONSTRAINT POSITION_PK "
+    << "DO UPDATE SET POS_AMOUNT = POSITION.POS_AMOUNT + " << W.quote(num) << ";";
     try{
         W.exec(ss.str());
         W.commit();
@@ -156,7 +162,8 @@ void updatePositionShares(work& W, const char* char_id, string& sym, double shar
     stringstream ss;
     ss << "INSERT INTO POSITION (SYM_NAME, ACT_ID, POS_AMOUNT) " << "VALUES ("
     << W.quote(sym)<< ", " << W.quote(char_id) << ", " << W.quote(shares) << ")"
-    << "DO UPDATE SET AMOUNT = POSITION.AMOUNT + " << W.quote(shares) << ";";
+    <<" ON CONFLICT ON CONSTRAINT POSITION_PK "
+    << "DO UPDATE SET POS_AMOUNT = POSITION.POS_AMOUNT + " << W.quote(shares) << ";";
     W.exec(ss.str());   
 }
 
@@ -188,11 +195,11 @@ void createOrder(work& W, long tran_id, double order_amount, double order_price,
 }
 
 TiXmlElement* queryTran(connection* C, const char* char_tran_id){
-    nontransaction N(*C);
+    work W(*C);
     TiXmlElement* res = new TiXmlElement("status");
     stringstream ss1;
-    ss1 << "SELECT TRAN_STATUS, TRAN_AMOUNT FROM TRANSACTIONS WHERE TRAN_ID = " << N.quote(char_tran_id) << ";";
-    result res1(N.exec(ss1.str()));
+    ss1 << "SELECT TRAN_STATUS, TRAN_AMOUNT FROM TRANSACTIONS WHERE TRAN_ID = " << W.quote(char_tran_id) << ";";
+    result res1(W.exec(ss1.str()));
     if(res1.size()==0){
         return nullptr;
     }
@@ -209,16 +216,16 @@ TiXmlElement* queryTran(connection* C, const char* char_tran_id){
         subres->SetAttribute("shares=",res1.begin()[1].as<double>());
         // query cancel time
         stringstream ss;
-        ss << "SELECT CAN_TIME FROM CANCEL WHERE TRAN_ID = " << N.quote(char_tran_id) << ";";
-        result r(N.exec(ss.str()));
+        ss << "SELECT CAN_TIME FROM CANCEL WHERE TRAN_ID = " << W.quote(char_tran_id) << ";";
+        result r(W.exec(ss.str()));
         long cancelTime = r.begin()[0].as<long>();
         subres->SetAttribute("time=",cancelTime);
         res->LinkEndChild (subres);
     }
     TiXmlElement* subres = new TiXmlElement("executed");
     stringstream ss2;
-    ss2 << "SELECT ODR_AMOUNT, ODR_PRICE, ODR_TIME FROM ORDERS WHERE TRAN_ID = " << N.quote(char_tran_id) << ";";
-    result res2(N.exec(ss2.str()));
+    ss2 << "SELECT ODR_AMOUNT, ODR_PRICE, ODR_TIME FROM ORDERS WHERE TRAN_ID = " << W.quote(char_tran_id) << ";";
+    result res2(W.exec(ss2.str()));
     for(result::const_iterator it=res2.begin();it!=res2.end();++it){
         TiXmlElement* subres = new TiXmlElement("executed");
         subres->SetAttribute("shares=",it[0].as<double>());
@@ -226,6 +233,7 @@ TiXmlElement* queryTran(connection* C, const char* char_tran_id){
         subres->SetAttribute("time=",it[2].as<long>());
         res->LinkEndChild (subres);
     }
+    W.commit();
     return res;
 }
 

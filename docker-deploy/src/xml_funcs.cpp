@@ -1,8 +1,8 @@
 #include "xml_funcs.h"
 
 void* handler(void* p){
-    int client_fd = ((std::pair<int,char*>*)p)->first;
-    std::string ip(((std::pair<int,char*>*)p)->second);
+    // int client_fd = ((std::pair<int,char*>*)p)->first;
+    // std::string ip(((std::pair<int,char*>*)p)->second);
     connection *C;
 
     try{
@@ -19,28 +19,45 @@ void* handler(void* p){
     }
 
     // recv client's xml request
-    TiXmlDocument* doc = recv_xml(client_fd);
-    if(doc==nullptr){
+    //TiXmlDocument* doc = recv_xml(client_fd);
+    //TiXmlDocument* doc=new TiXmlDocument("~/ece568/hw4/docker-deploy/src/input.xml");
+    TiXmlDocument doc("input.xml");
+    bool success = doc.LoadFile();
+
+
+    if(!success){
+        cerr << "error loading xml" << endl;
+        cerr << doc.ErrorDesc() << endl;
         return nullptr;
     }
+    cout << "open xml success" << endl;
     // get root
-    TiXmlElement* root = doc->RootElement();
-    const char* req_root = root->Value();
+    TiXmlElement* root = doc.RootElement();
+    string req_root = root->Value();
     
+    cout << "get root" << endl;
 
     // build a xml response
     TiXmlDocument response;
     TiXmlElement* res_root = new TiXmlElement("results");
     response.LinkEndChild(res_root);
 
+    cout << "start " << endl;
+
     // xml header
     if(req_root=="create"){
+        cout << "I'm here" << endl;
         // todo:handle creation
         for(TiXmlElement* child = root->FirstChildElement(); child; child = child->NextSiblingElement()){
-            if(child->Value()=="account"){
+            cout << child->Value() << endl;
+            if(child->Value()==string("account")){
+                cout << "I'm here2" << endl;
                 const char* id = child->Attribute("id");
                 const char* balance = child->Attribute("balance");
                 bool flag = createAccount(C,id,balance);
+
+                cout << "finish create account" << endl;
+
                 // if success
                 if(flag){
                     // <created id='account_id'/>
@@ -56,14 +73,18 @@ void* handler(void* p){
                     error->LinkEndChild(new TiXmlText("Error create this account"));
                     res_root->LinkEndChild(error);
                 }
+
             }
-            else if(child->Value()=="symbol"){
+            else if(child->Value()==string("symbol")){
                 // can have 1 or more subchild
                 const char* sym = child->Attribute("sym");
                 for(TiXmlElement* subchild = child->FirstChildElement(); subchild; subchild = subchild->NextSiblingElement()){
                     const char* id = subchild->Attribute("id");
                     const char* num = subchild->Value();
                     bool flag = createSymbol(C,sym,id,num);
+
+                    cout << "finish create symbol" << endl;
+
                     // if success
                     if(flag){
                         // <created sym='sym' id='account_id'/>
@@ -80,8 +101,16 @@ void* handler(void* p){
                         error->LinkEndChild(new TiXmlText("Error create this symbol"));
                         res_root->LinkEndChild(error);   
                     }
+
+                    cout << "start create position" << endl; 
+
                     createPosition(C,sym,id,num);
+
+                    cout << "end of create position" << endl;
                 }
+
+                cout << "end of symbol" << endl;
+
             }
             else{
                 //error child name
@@ -98,8 +127,10 @@ void* handler(void* p){
         int numofchild = -1;
         std::string id(char_id);
         // invalid id or null id field
-        if(id.size()==0||!queryAccount(C,std::atol(char_id))){
+        work W(*C);
+        if(id.size()==0||!queryAccount(W,std::atol(char_id))){
             numofchild = 0;
+            W.commit();
             for(TiXmlElement* child = root->FirstChildElement(); child; child = child->NextSiblingElement()){
                 TiXmlElement* error = new TiXmlElement("error");
                 if(id.size()==0){
@@ -113,20 +144,24 @@ void* handler(void* p){
             }  
         }
         else{
+            W.commit();
             numofchild = 0;
             for(TiXmlElement* child = root->FirstChildElement(); child; child = child->NextSiblingElement()){
-                if(child->Value()=="order"){
+                if(child->Value()==string("order")){
                     // todo: place order
                     const char* char_sym = child->Attribute("sym");
                     const char* char_amount = child->Attribute("amount");
                     const char* char_limit = child->Attribute("limit");
                     std::string sym(char_sym);
-                    if(!querySymbol(C,sym)){
+                    work W(*C);
+                    if(!querySymbol(W,sym)){
+                        W.commit();
                         TiXmlElement* error;
                         error->LinkEndChild(new TiXmlText("Invalid symbol name"));
                         res_root->LinkEndChild(error);
                     }
                     else{
+                        W.commit();
                         TiXmlElement* res = handleOrder(C,char_id,sym,atol(char_amount),atof(char_limit));
                         res->SetAttribute("sym",char_sym);
                         res->SetAttribute("amount",char_amount);
@@ -134,7 +169,7 @@ void* handler(void* p){
                         res_root->LinkEndChild(res);
                     }
                 }
-                else if(child->Value()=="query"){
+                else if(child->Value()==string("query")){
                     // todo: place query
                     const char* char_id = child->Attribute("id");
                     TiXmlElement* res = queryTran(C,char_id);
@@ -177,13 +212,14 @@ void* handler(void* p){
 
     // send response back
 
-    if(send(client_fd,&res_root,sizeof(res_root),0)!=sizeof(res_root)){
-        std::cerr << "Error sending" << std::endl;
-    }
-    res_root->Clear();
-    doc->Clear();
+    // if(send(client_fd,&res_root,sizeof(res_root),0)!=sizeof(res_root)){
+    //     std::cerr << "Error sending" << std::endl;
+    // }
+    response.SaveFile("output.xml");
+    response.Clear();
+    doc.Clear();
     C->disconnect();
-    close(client_fd);
+    //close(client_fd);
     delete C;
     return nullptr;
 }
