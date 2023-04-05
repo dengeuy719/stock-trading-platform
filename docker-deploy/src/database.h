@@ -6,8 +6,8 @@
 using namespace std;
 using namespace pqxx;
 bool createAccount(connection* C, const char* char_id, const char* char_balance);
-bool querySymbol(connection* C, string& sym_name);
-bool queryAccount(connection* C, long account_id);
+bool querySymbol(work& W, string& sym_name);
+bool queryAccount(work& W, long account_id);
 bool createSymbol(connection* C, const char* char_sym, const char* char_id, const char* char_num);
 void createPosition(connection* C, const char* char_sym, const char* char_id, const char* char_num);
 
