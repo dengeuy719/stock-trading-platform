@@ -101,7 +101,12 @@ void* handler(void* p){
                         error->LinkEndChild(new TiXmlText("Error create this symbol"));
                         res_root->LinkEndChild(error);   
                     }
+
+                    cout << "start create position" << endl; 
+
                     createPosition(C,sym,id,num);
+
+                    cout << "end of create position" << endl;
                 }
 
                 cout << "end of symbol" << endl;

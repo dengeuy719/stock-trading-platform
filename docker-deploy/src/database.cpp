@@ -12,7 +12,7 @@ bool createAccount(connection* C, const char* char_id, const char* char_balance)
     if(flag){
         return false;
     }
-    ss << "INSERT INTO ACCOUNT (ACCOUNT_ID, BALANCE) " << "VALUES (" << W.quote(id) << ", " << W.quote(balance)<< ");";
+    ss << "INSERT INTO ACCOUNT (ACT_ID, ACT_BALANCE) " << "VALUES (" << W.quote(id) << ", " << W.quote(balance)<< ");";
     try{
         W.exec(ss.str());
         W.commit();
@@ -27,7 +27,7 @@ bool createAccount(connection* C, const char* char_id, const char* char_balance)
 
 bool querySymbol(work& W, string& sym_name){
     stringstream ss;
-    ss << "SELECT * FROM SYMBOL WHERE SYMBOL_NAME=" << W.quote(sym_name) << ";";
+    ss << "SELECT * FROM SYMBOL WHERE SYM_NAME=" << W.quote(sym_name) << ";";
     
     result res(W.exec(ss.str()));
     return res.size()!=0;
@@ -36,7 +36,7 @@ bool querySymbol(work& W, string& sym_name){
 
 bool queryAccount(work& W, long id){
     stringstream ss;
-    ss << "SELECT * FROM ACCOUNT WHERE ACCOUNT_ID=" << W.quote(id) << ";";
+    ss << "SELECT * FROM ACCOUNT WHERE ACT_ID=" << W.quote(id) << ";";
     result res(W.exec(ss.str()));
     return res.size()!=0;
 }
@@ -53,7 +53,7 @@ bool createSymbol(connection* C, const char* char_sym, const char* char_id, cons
     
     if(!querySymbol(W,sym)){
         stringstream ss;
-        ss << "INSERT INTO SYMBOL (SYMBOL_NAME) " << "VALUES (" << W.quote(sym) << ");";
+        ss << "INSERT INTO SYMBOL (SYM_NAME) " << "VALUES (" << W.quote(sym) << ");";
         W.exec(ss.str());
     }
     try{
@@ -70,11 +70,12 @@ void createPosition(connection* C, const char* char_sym, const char* char_id, co
     work W(*C);
     stringstream ss;
     string sym(char_sym);
-    string id(char_id);
-    string num(char_num);
+    long id = atol(char_id);
+    double num = atof(char_num);
     ss << "INSERT INTO POSITION (SYM_NAME, ACT_ID, POS_AMOUNT) " << "VALUES ("
-    << W.quote(sym)<< ", " << W.quote(id) << ", " << W.quote(num) << ")"
-    << "DO UPDATE SET AMOUNT = POSITION.AMOUNT + " << W.quote(num) << ";";
+    << W.quote(sym)<< ", " << W.quote(id) << ", " << W.quote(num) << ") "
+    <<" ON CONFLICT ON CONSTRAINT POSITION_PK "
+    << "DO UPDATE SET POS_AMOUNT = POSITION.POS_AMOUNT + " << W.quote(num) << ";";
     try{
         W.exec(ss.str());
         W.commit();
@@ -161,7 +162,8 @@ void updatePositionShares(work& W, const char* char_id, string& sym, double shar
     stringstream ss;
     ss << "INSERT INTO POSITION (SYM_NAME, ACT_ID, POS_AMOUNT) " << "VALUES ("
     << W.quote(sym)<< ", " << W.quote(char_id) << ", " << W.quote(shares) << ")"
-    << "DO UPDATE SET AMOUNT = POSITION.AMOUNT + " << W.quote(shares) << ";";
+    <<" ON CONFLICT ON CONSTRAINT POSITION_PK "
+    << "DO UPDATE SET POS_AMOUNT = POSITION.POS_AMOUNT + " << W.quote(shares) << ";";
     W.exec(ss.str());   
 }
 
