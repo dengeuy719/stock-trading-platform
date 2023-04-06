@@ -24,7 +24,7 @@ void* handler(void* p){
     printer.SetIndent("    ");
     doc->Accept(&printer);
 
-    std::cout << printer.CStr() << std::endl;
+    //std::cout << printer.CStr() << std::endl;
     //TiXmlDocument* doc=new TiXmlDocument("~/ece568/hw4/docker-deploy/src/input.xml");
     //TiXmlDocument doc("input.xml");
     //bool success = (*doc).LoadFile();
@@ -85,7 +85,7 @@ void* handler(void* p){
                 const char* sym = child->Attribute("sym");
                 for(TiXmlElement* subchild = child->FirstChildElement(); subchild; subchild = subchild->NextSiblingElement()){
                     const char* id = subchild->Attribute("id");
-                    const char* num = subchild->Value();
+                    const char* num = subchild->GetText();
                     bool flag = createSymbol(C,sym,id,num);
 
                     cout << "finish create symbol" << endl;
@@ -108,7 +108,7 @@ void* handler(void* p){
                     }
 
                     cout << "start create position" << endl; 
-
+                    cout << "num: " <<num <<endl;
                     createPosition(C,sym,id,num);
 
                     cout << "end of create position" << endl;
@@ -128,12 +128,16 @@ void* handler(void* p){
     }
     else if(req_root=="transactions"){
         // todo:handle transactions
+        cout << "inside transactions" <<endl;
         const char* char_id = root->Attribute("id");
         int numofchild = -1;
         std::string id(char_id);
+        cout << "id:" << id <<endl;
         // invalid id or null id field
         work W(*C);
+        
         if(id.size()==0||!queryAccount(W,std::atol(char_id))){
+            cout << "inside transactions: if :" <<endl;
             numofchild = 0;
             W.commit();
             for(TiXmlElement* child = root->FirstChildElement(); child; child = child->NextSiblingElement()){
@@ -149,51 +153,66 @@ void* handler(void* p){
             }  
         }
         else{
+            cout << "inside transactions: else :" <<endl;
             W.commit();
             numofchild = 0;
             for(TiXmlElement* child = root->FirstChildElement(); child; child = child->NextSiblingElement()){
                 if(child->Value()==string("order")){
                     // todo: place order
+                    cout << "inside transactions: else : order:" <<endl;
                     const char* char_sym = child->Attribute("sym");
                     const char* char_amount = child->Attribute("amount");
                     const char* char_limit = child->Attribute("limit");
                     std::string sym(char_sym);
                     work W(*C);
                     if(!querySymbol(W,sym)){
+                        cout << "inside transactions: else : order: if" <<endl;
                         W.commit();
-                        TiXmlElement* error;
+                        TiXmlElement* error = new TiXmlElement("error");
                         error->LinkEndChild(new TiXmlText("Invalid symbol name"));
+                        error->SetAttribute("sym",char_sym);
+                        error->SetAttribute("amount",char_amount);
+                        error->SetAttribute("limit",char_limit);
                         res_root->LinkEndChild(error);
                     }
                     else{
+                        cout << "inside transactions: else : order: else" <<endl;
                         W.commit();
-                        TiXmlElement* res = handleOrder(C,char_id,sym,atol(char_amount),atof(char_limit));
+                        TiXmlElement* res = handleOrder(C,char_id,sym,atof(char_amount),atof(char_limit));
                         res->SetAttribute("sym",char_sym);
                         res->SetAttribute("amount",char_amount);
                         res->SetAttribute("limit",char_limit);
                         res_root->LinkEndChild(res);
                     }
+                    cout << "inside transactions: else : order: finish" <<endl;
                 }
                 else if(child->Value()==string("query")){
                     // todo: place query
+                    cout << "inside query" <<endl;
                     const char* char_id = child->Attribute("id");
+                    cout << "inside query: queryTran" <<endl;
                     TiXmlElement* res = queryTran(C,char_id);
                     if(res==nullptr){
-                        res = new TiXmlElement("error");
-                        res->LinkEndChild (new TiXmlText("Invalid transaction id"));
-                        res_root->LinkEndChild (res);
+                        cout << "res==nullptr" << endl;
+                        res = new TiXmlElement("status");
+                        TiXmlElement* error = new TiXmlElement("error");
+                        error->LinkEndChild (new TiXmlText("Invalid transaction id"));
+                        res->LinkEndChild (error);
                     }
+                    cout << "res==nullptr : finish" << endl;
                     res->SetAttribute("id",char_id);
                     res_root->LinkEndChild (res);
+                    cout << "query : finish" << endl;
                 }
                 else{
                     // todo: place cancel
                     const char* char_id = child->Attribute("id");
                     TiXmlElement* res = cancelTran(C,char_id);
                     if(res==nullptr){
-                        res = new TiXmlElement("error");
-                        res->LinkEndChild (new TiXmlText("Invalid transaction id"));
-                        res_root->LinkEndChild (res);
+                        res = new TiXmlElement("status");
+                        TiXmlElement* error = new TiXmlElement("error");
+                        error->LinkEndChild (new TiXmlText("Invalid transaction id"));
+                        res->LinkEndChild (error);
                     }
                     res->SetAttribute("id",char_id);
                     res_root->LinkEndChild (res);
@@ -203,9 +222,11 @@ void* handler(void* p){
         }
         if(numofchild==0){
             // empty child
-            TiXmlElement* error;
+            cout << "inside numofchild==0" <<endl;
+            TiXmlElement* error= new TiXmlElement("error");
             error->LinkEndChild(new TiXmlText("Transaction tag has 0 child"));
             res_root->LinkEndChild(error);
+            cout << "inside numofchild==0:finish" <<endl;
         }
     }
     else{
@@ -219,10 +240,10 @@ void* handler(void* p){
     TiXmlPrinter printer1;
     printer1.SetIndent("    ");
     response.Accept(&printer1);
-    std::cout <<"printer1.Size(): " <<printer1.Size() << std::endl;
+    //std::cout <<"printer1.Size(): " <<printer1.Size() << std::endl;
     //
     const string sendStr = printer1.CStr();
-    std::cout <<"sendStr: " << sendStr << std::endl;
+    //std::cout <<"sendStr: " << sendStr << std::endl;
     if(send(client_fd,sendStr.data(),printer1.Size(),0)!=printer1.Size()){
         std::cerr << "Error sending" << std::endl;
     }
@@ -253,6 +274,6 @@ TiXmlDocument* recv_xml(int fd){
     
     TiXmlDocument* doc = new TiXmlDocument();
     doc->Parse(msg.c_str());
-    std::cout << recv_len << ", "<< msg << std::endl;
+    //std::cout << recv_len << ", "<< msg << std::endl;
     return doc;
 }

@@ -1,4 +1,5 @@
 <results>
-    <error id="123456">Error create this account</error>
-    <created sym="SPY" id="123456" />
+    <error>Invalid id</error>
+    <error>Invalid id</error>
+    <error>Invalid id</error>
 </results>

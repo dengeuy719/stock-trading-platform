@@ -11,7 +11,7 @@ bool queryAccount(work& W, long account_id);
 bool createSymbol(connection* C, const char* char_sym, const char* char_id, const char* char_num);
 void createPosition(connection* C, const char* char_sym, const char* char_id, const char* char_num);
 
-TiXmlElement* handleOrder(connection *C, const char* char_id, string& sym, long amount, double limit);
+TiXmlElement* handleOrder(connection *C, const char* char_id, string& sym, double amount, double limit);
 double queryBalance(work& W, const char* char_id);
 void updateAccountBalance(work& W, const char* char_id, double balance);
 double queryShares(work& W, const char* char_id, string& sym);

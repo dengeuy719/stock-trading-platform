@@ -10,7 +10,7 @@
 
 void sendStr(int fd, std::string msg){
     int status = send(fd, msg.data(), msg.size(),0);
-    std::cerr << msg.size() << std::endl;
+    //std::cerr << msg.size() << std::endl;
     if(status == -1){
         std::cerr << "Error sending" << std::endl;
     }
@@ -20,7 +20,7 @@ std::string reciveStr(int fd){
     char ori_msg[65535];
     memset(ori_msg, 0, sizeof(ori_msg));
     int recv_len = recv(fd, &ori_msg, sizeof(ori_msg), 0);
-    std::cout << recv_len << std::endl;
+    //std::cout << recv_len << std::endl;
     if(recv_len == -1){
         std::cerr << "Error reciving" << std::endl;
     }
@@ -42,15 +42,15 @@ std::string readXMLFileToString(const std::string &filename) {
 }
 
 
-int main() {
+int main(int argc, char **argv) {
     Client client("127.0.0.1", PORT);
     std::cout<<"Connected!"<<std::endl;
-    const std::string filename = "input.xml";
+    const std::string filename = argv[1];
     std::string xmlContent = readXMLFileToString(filename);
     if (xmlContent.empty()) {
         std::cerr << "Failed to read XML file" << std::endl;
     }
-    std::cout <<  xmlContent << std::endl;
+    //std::cout <<  xmlContent << std::endl;
     sendStr(client.socket_fd, xmlContent);
     std::cout << "finish send" << std::endl;
     std::string res = reciveStr(client.socket_fd);
