@@ -1,5 +1,17 @@
 <results>
-    <error>Invalid id</error>
-    <error>Invalid id</error>
-    <error>Invalid id</error>
+    <created id="1" />
+    <created id="2" />
+    <created id="3" />
+    <created id="4" />
+    <error id="1">Error create this account</error>
+    <created sym="A" id="1" />
+    <created sym="A" id="1" />
+    <created sym="A" id="2" />
+    <error sym="A" id="5">Error create this symbol</error>
+    <created sym="A" id="1" />
+    <created sym="B" id="2" />
+    <created sym="B" id="3" />
+    <created sym="C" id="1" />
+    <created sym="A" id="4" />
+    <created sym="B" id="4" />
 </results>
