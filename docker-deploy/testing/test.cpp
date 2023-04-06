@@ -4,10 +4,6 @@
 #include <fstream>
 #include <string>
 
-
-
-
-
 void sendStr(int fd, std::string msg){
     int status = send(fd, msg.data(), msg.size(),0);
     //std::cerr << msg.size() << std::endl;
