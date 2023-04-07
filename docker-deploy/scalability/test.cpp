@@ -9,9 +9,9 @@
 
 
 void sendStr(int fd, std::string msg){
-    //std::cout << msg.size() << std::endl;
+    std::cout << msg.size() << std::endl;
     int status = send(fd, msg.data(), msg.size(),0);
-    //std::cout << "status: "<<status << std::endl;
+    std::cout << "status: "<<status << std::endl;
     if(status == -1){
         std::cerr << "Error sending" << std::endl;
     }
@@ -44,7 +44,7 @@ std::string readXMLFileToString(const std::string &filename) {
 
 void handler(void* argv) {
     Client client("127.0.0.1", PORT);
-    //std::cout<<"Connected!"<<std::endl;
+    std::cout<<"Connected!"<<std::endl;
     const std::string filename = (char*)argv;
     std::string xmlContent = readXMLFileToString(filename);
     if (xmlContent.empty()) {
@@ -52,10 +52,10 @@ void handler(void* argv) {
     }
     //std::cout <<  xmlContent << std::endl;
     sendStr(client.socket_fd, xmlContent);
-    //std::cout << "finish send" << std::endl;
+    std::cout << "finish send" << std::endl;
     std::string res = reciveStr(client.socket_fd);
-    //std::cout<<res<<std::endl;
-    //std::cout << "finish recive" << std::endl;
+    std::cout<<res<<std::endl;
+    std::cout << "finish recive" << std::endl;
     //return nullptr;
 }
 
@@ -72,12 +72,13 @@ int main(int argc, char **argv) {
         std::cout << num << std::endl;
         --num;
     }
-    //std::cout << num << std::endl;
+    std::cout << num << std::endl;
     // Record the end time
     gettimeofday(&end, NULL);
 
     // Calculate the elapsed time
     long elapsed_time = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec);
+
     // Print the execution time in microseconds
     // printf("Execution time: %ld microseconds\n", elapsed_time);
     std::cout << elapsed_time << std::endl;

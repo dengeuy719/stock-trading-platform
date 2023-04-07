@@ -20,6 +20,10 @@ void* handler(void* p){
 
     // recv client's xml request
     TiXmlDocument* doc = recv_xml(client_fd);
+    if(doc==nullptr){
+        cerr << "recv error" << endl;
+        return nullptr;
+    }
     TiXmlPrinter printer;
     printer.SetIndent("    ");
     doc->Accept(&printer);
@@ -260,11 +264,12 @@ TiXmlDocument* recv_xml(int fd){
     char ori_msg[65535];
     memset(ori_msg,0,sizeof(ori_msg));
     int recv_len = recv(fd, &ori_msg, sizeof(ori_msg), 0);
-    if(recv_len<0){
-        std::cerr << "Error receiving msg" << std::endl;
+    cout << recv_len << ": " << fd << endl;
+    if(recv_len<=0){
+        std::cerr << "Error receiving msg :" << fd << std::endl;
         return nullptr;
     }
-    //cout << recv_len << endl;
+    
     string msg(ori_msg,recv_len);
     size_t pos = msg.find('\n');
     string slen = msg.substr(0,pos);

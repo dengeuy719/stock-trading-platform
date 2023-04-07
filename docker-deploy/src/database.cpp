@@ -47,6 +47,10 @@ bool createSymbol(connection* C, const char* char_sym, const char* char_id, cons
     work W(*C);
     if(sym.size()==0||!queryAccount(W,id)||querySymbol(W,sym)){
         // empty sym name or null account or existed symbol
+        if(queryAccount(W,id)&&querySymbol(W,sym)){
+            W.commit();
+            return true;
+        }
         W.commit();
         return false;
     }
