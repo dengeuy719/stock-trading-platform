@@ -3,12 +3,15 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <pthread.h>
+#include <unistd.h>
+#include <sys/time.h>
 
-#define MAX_THREAD 1
 
 void sendStr(int fd, std::string msg){
+    std::cout << msg.size() << std::endl;
     int status = send(fd, msg.data(), msg.size(),0);
-    //std::cerr << msg.size() << std::endl;
+    std::cout << "status: "<<status << std::endl;
     if(status == -1){
         std::cerr << "Error sending" << std::endl;
     }
@@ -39,7 +42,7 @@ std::string readXMLFileToString(const std::string &filename) {
     return buffer.str();
 }
 
-void *handler(void* argv) {
+void handler(void* argv) {
     Client client("127.0.0.1", PORT);
     std::cout<<"Connected!"<<std::endl;
     const std::string filename = (char*)argv;
@@ -53,22 +56,31 @@ void *handler(void* argv) {
     std::string res = reciveStr(client.socket_fd);
     std::cout<<res<<std::endl;
     std::cout << "finish recive" << std::endl;
-    return nullptr;
+    //return nullptr;
 }
 
 int main(int argc, char **argv) {
-    int threads[MAX_THREAD];
-    pthread_attr_t thread_attr[MAX_THREAD];
-    pthread_t thread_ids[MAX_THREAD];
 
-    for (int i = 0; i < MAX_THREAD; ++i) {
-        pthread_create(&thread_ids[i], NULL, handler, argv[1]);
-        usleep(1000);
-    } 
-    for (int i = 0; i < MAX_THREAD; ++i) {
-        pthread_join(thread_ids[i], NULL);
+    // Record the start time
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
+    int num = atoi(argv[2]);
+    while(num) {
+        // pthread_t thread;
+        // pthread_create(&thread,NULL,handler,argv[1]);
+        handler(argv[1]);
+        std::cout << num << std::endl;
+        --num;
     }
+    std::cout << num << std::endl;
+    // Record the end time
+    gettimeofday(&end, NULL);
 
+    // Calculate the elapsed time
+    long elapsed_time = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec);
+
+    // Print the execution time in microseconds
+    // printf("Execution time: %ld microseconds\n", elapsed_time);
+    std::cout << elapsed_time << std::endl;
     return 0;
-
 }

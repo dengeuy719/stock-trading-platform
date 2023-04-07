@@ -260,11 +260,11 @@ TiXmlDocument* recv_xml(int fd){
     char ori_msg[65535];
     memset(ori_msg,0,sizeof(ori_msg));
     int recv_len = recv(fd, &ori_msg, sizeof(ori_msg), 0);
-    if(recv_len<=0){
+    if(recv_len<0){
         std::cerr << "Error receiving msg" << std::endl;
         return nullptr;
     }
-
+    cout << recv_len << endl;
     string msg(ori_msg,recv_len);
     size_t pos = msg.find('\n');
     string slen = msg.substr(0,pos);
@@ -272,18 +272,18 @@ TiXmlDocument* recv_xml(int fd){
     int len = stoi(slen);
     msg = msg.substr(pos+1);
     int cur_len = msg.size();
-    while(cur_len<len){
-        char part_ori_msg[65535];
-        memset(part_ori_msg,0,sizeof(part_ori_msg));
-        int recv_part_len = recv(fd, &part_ori_msg, sizeof(part_ori_msg), 0);
-        if(recv_part_len<=0){
-            std::cerr << "Error receiving msg" << std::endl;
-            return nullptr;
-        }
-        string part_msg(part_ori_msg,recv_part_len);
-        msg+=part_msg;
-        cur_len+=recv_part_len;
-    }
+    // while(cur_len<len){
+    //     char part_ori_msg[65535];
+    //     memset(part_ori_msg,0,sizeof(part_ori_msg));
+    //     int recv_part_len = recv(fd, &part_ori_msg, sizeof(part_ori_msg), 0);
+    //     if(recv_part_len<=0){
+    //         std::cerr << "Error receiving msg" << std::endl;
+    //         return nullptr;
+    //     }
+    //     string part_msg(part_ori_msg,recv_part_len);
+    //     msg+=part_msg;
+    //     cur_len+=recv_part_len;
+    // }
     TiXmlDocument* doc = new TiXmlDocument();
     doc->Parse(msg.c_str());
     //std::cout << recv_len << ", "<< msg << std::endl;

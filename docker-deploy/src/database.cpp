@@ -45,22 +45,23 @@ bool createSymbol(connection* C, const char* char_sym, const char* char_id, cons
     long id = atol(char_id);
     string sym(char_sym);
     work W(*C);
-    if(sym.size()==0||!queryAccount(W,id)){
-        // empty sym name or null account
+    if(sym.size()==0||!queryAccount(W,id)||querySymbol(W,sym)){
+        // empty sym name or null account or existed symbol
+        W.commit();
         return false;
     }
     // create a new one
     
-    if(!querySymbol(W,sym)){
-        stringstream ss;
-        ss << "INSERT INTO SYMBOL (SYM_NAME) " << "VALUES (" << W.quote(sym) << ");";
-        W.exec(ss.str());
-    }
+    stringstream ss;
+    ss << "INSERT INTO SYMBOL (SYM_NAME) " << "VALUES (" << W.quote(sym) << ");";
+    
     try{
+        W.exec(ss.str());
         W.commit();
     }
     catch(const exception& e){
         cerr << e.what() << endl;
+        W.abort();
         return false;
     }
     return true;
@@ -259,7 +260,14 @@ TiXmlElement* queryTran(connection* C, const char* char_tran_id){
         subres->SetAttribute("time=",it[2].as<long>());
         res->LinkEndChild (subres);
     }
-    W.commit();
+    try{
+        W.commit();
+    }
+    catch(const exception& e){
+        cerr << e.what() << endl;
+        W.abort();
+        return queryTran(C, char_tran_id);
+    }
     return res;
 }
 
