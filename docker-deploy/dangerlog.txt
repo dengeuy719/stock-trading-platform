@@ -4,12 +4,12 @@ Improvement we made:
 
 2. Race conditions: We implemented proper synchronization and locking mechanisms to manage access to shared resources. 
 
-Further Improvement:
+3. Unauthorized access: Someone tries to sneak into the system without permission, which can put the whole system's security at risk.
 
-1. Unauthorized access: Someone tries to sneak into the system without permission, which can put the whole system's security at risk.
+4. System downtime or performance issues: Unexpected system outages or performance degradation that could disrupt trading activities and affect the overall functioning of the stock exchange.
 
-2. System downtime or performance issues: Unexpected system outages or performance degradation that could disrupt trading activities and affect the overall functioning of the stock exchange.
+5. Internal system errors: Potential software bugs, hardware failures, or other technical issues within the stock exchange system that could lead to incorrect or incomplete trade processing.
 
-3. Internal system errors: Potential software bugs, hardware failures, or other technical issues within the stock exchange system that could lead to incorrect or incomplete trade processing.
+6. Network latency and timeouts: The system may experiences network latency or timeouts when reciving massive requests, causing delays in processing orders or updates.
 
-4. Network latency and timeouts: The system may experiences network latency or timeouts when reciving massive requests, causing delays in processing orders or updates.
+7. Concurrency: Fixed bugs when multiple users connect to our service simultaneously.
