@@ -108,7 +108,7 @@ int main(){
     Server stoke_server;
     stoke_server.run();
 
-    cout << "server started" << endl;
+    //cout << "server started" << endl;
     // listen to user's connection and allocate threads
     pthread_mutex_t mutex;
     while(true){
@@ -116,7 +116,7 @@ int main(){
         pair<int,char*> client = stoke_server.accept_connections();
         int client_fd = client.first;
         string ip(client.second);
-        cout << "Connected with the client from "<< client_fd << " " << ip << endl;
+        //cout << "Connected with the client from "<< client_fd << " " << ip << endl;
         pthread_t thread;
         pthread_create(&thread,NULL,handler,&client);
         pthread_mutex_unlock(&mutex);

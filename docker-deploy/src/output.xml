@@ -1,0 +1,17 @@
+<results>
+    <error id="1">Error create this account</error>
+    <error id="2">Error create this account</error>
+    <error id="3">Error create this account</error>
+    <error id="4">Error create this account</error>
+    <error id="1">Error create this account</error>
+    <error sym="A" id="1">Error create this symbol</error>
+    <error sym="A" id="1">Error create this symbol</error>
+    <error sym="A" id="2">Error create this symbol</error>
+    <error sym="A" id="5">Error create this symbol</error>
+    <error sym="A" id="1">Error create this symbol</error>
+    <error sym="B" id="2">Error create this symbol</error>
+    <error sym="B" id="3">Error create this symbol</error>
+    <error sym="C" id="1">Error create this symbol</error>
+    <error sym="A" id="4">Error create this symbol</error>
+    <error sym="B" id="4">Error create this symbol</error>
+</results>
