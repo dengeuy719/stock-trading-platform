@@ -80,7 +80,6 @@ int main(int argc, char **argv) {
     long elapsed_time = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec);
 
     // Print the execution time in microseconds
-    // printf("Execution time: %ld microseconds\n", elapsed_time);
     std::cout << elapsed_time << std::endl;
     return 0;
 }

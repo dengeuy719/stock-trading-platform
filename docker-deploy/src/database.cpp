@@ -93,12 +93,12 @@ void createPosition(connection* C, const char* char_sym, const char* char_id, co
 }
 
 TiXmlElement* handleOrder(connection *C, const char* char_id, string& sym, double amount, double limit){
-    cout << "inside handleOrder:" <<endl;
+    //cout << "inside handleOrder:" <<endl;
     work W(*C);
     TiXmlElement* res;
     // buy
     if(amount>0){
-        cout << "inside handleOrder:amount>0" <<endl;
+        //cout << "inside handleOrder:amount>0" <<endl;
         double balance = queryBalance(W,char_id);
         // validate balance
         if(balance<amount*limit){
@@ -113,25 +113,25 @@ TiXmlElement* handleOrder(connection *C, const char* char_id, string& sym, doubl
     }
     // sell
     else{
-        cout << "inside handleOrder:amount<=0" <<endl;
+        //cout << "inside handleOrder:amount<=0" <<endl;
         double shares = queryShares(W,char_id,sym);
-        cout << "finish queryShares" <<endl;
+        //cout << "finish queryShares" <<endl;
         if(shares<-amount){
-            cout << "inside handleOrder:amount<=0:shares<amount" <<endl;
+            //cout << "inside handleOrder:amount<=0:shares<amount" <<endl;
             res = new TiXmlElement("error");
             res->LinkEndChild(new TiXmlText("sell: Insufficient shares"));
             return res;
         }else{
-            cout << "inside handleOrder:amount<=0:shares>=amount" <<endl;
+            //cout << "inside handleOrder:amount<=0:shares>=amount" <<endl;
             double newShares = amount;
             res = new TiXmlElement("opened");
             updatePositionShares(W, char_id, sym, newShares);
         }
     }
     // create transaction
-    cout << "create transaction" << endl;
+    //cout << "create transaction" << endl;
     long tran_id = createTran(W,char_id,sym,amount,limit);
-    cout << "create transaction: finish" << endl;
+    //cout << "create transaction: finish" << endl;
     try{
         W.commit();
     }
@@ -166,15 +166,15 @@ void updateAccountBalance(work& W, const char* char_id, double balance){
 }
 
 double queryShares(work& W, const char* char_id, string &sym){
-    cout << sym << endl;
-    cout << W.quote(char_id) << endl;
+    //cout << sym << endl;
+    //cout << W.quote(char_id) << endl;
     stringstream ss;
     ss << "SELECT POS_AMOUNT FROM POSITION WHERE"
     << " ACT_ID = " << W.quote(char_id)
     << " AND SYM_NAME = " << W.quote(sym) << ";";
     result res(W.exec(ss.str()));
-    cout << "queryShares:finish" << endl;
-    cout << res.size() << endl;
+    //cout << "queryShares:finish" << endl;
+    //cout << res.size() << endl;
     if(res.size() == 0) {
         return 0;
     }
@@ -182,7 +182,7 @@ double queryShares(work& W, const char* char_id, string &sym){
 }
 
 void updatePositionShares(work& W, const char* char_id, string& sym, double shares){
-    cout << shares <<endl;
+    //cout << shares <<endl;
     stringstream ss;
     ss << "INSERT INTO POSITION (SYM_NAME, ACT_ID, POS_AMOUNT) " << "VALUES ("
     << W.quote(sym)<< ", " << W.quote(char_id) << ", " << W.quote(shares) << ")"
@@ -192,7 +192,7 @@ void updatePositionShares(work& W, const char* char_id, string& sym, double shar
 }
 
 long createTran(work& W, const char* char_id, string& sym, double amount, double limit){
-    cout << "inside createTran" << endl;
+    //cout << "inside createTran" << endl;
     stringstream ss;
     // generate time
     long time = generateTime();
@@ -202,7 +202,7 @@ long createTran(work& W, const char* char_id, string& sym, double amount, double
     << W.quote(limit) << ", " << W.quote(time) << ") " << "RETURNING TRAN_ID;";
     result res(W.exec(ss.str()));
     long tran_id = res.begin()[0].as<long>();
-    cout << "inside createTran: finish" << endl;
+    //cout << "inside createTran: finish" << endl;
     return tran_id;
 }
 
@@ -239,17 +239,17 @@ TiXmlElement* queryTran(connection* C, const char* char_tran_id){
     }
     else{
         // status canceled
-        cout << "queryTran : else"<<endl;
+        //cout << "queryTran : else"<<endl;
         TiXmlElement* subres = new TiXmlElement("canceled");
         subres->SetAttribute("shares=",res1.begin()[1].as<double>());
-        cout << "queryTran : else: subres"<<endl;
+        //cout << "queryTran : else: subres"<<endl;
         // query cancel time
         stringstream ss;
         ss << "SELECT CAN_TIME FROM CANCEL WHERE TRAN_ID = " << W.quote(char_tran_id) << ";";
         result r(W.exec(ss.str()));
-        cout << "queryTran : else: result"<<endl;
+        //cout << "queryTran : else: result"<<endl;
         long cancelTime = r.begin()[0].as<long>();
-        cout << "queryTran : else: cancelTime"<<endl;
+        //cout << "queryTran : else: cancelTime"<<endl;
         subres->SetAttribute("time=",cancelTime);
         res->LinkEndChild (subres);
     }

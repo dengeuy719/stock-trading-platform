@@ -5,3 +5,4 @@
 ./test input4.xml
 ./test input5.xml
 ./test input6.xml
+./test input7.xml

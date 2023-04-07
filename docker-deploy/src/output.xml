@@ -1,17 +1,6 @@
 <results>
-    <error id="1">Error create this account</error>
-    <error id="2">Error create this account</error>
-    <error id="3">Error create this account</error>
-    <error id="4">Error create this account</error>
-    <error id="1">Error create this account</error>
-    <created sym="A" id="1" />
-    <created sym="A" id="1" />
-    <created sym="A" id="2" />
-    <error sym="A" id="5">Error create this symbol</error>
-    <created sym="A" id="1" />
-    <created sym="B" id="2" />
-    <created sym="B" id="3" />
-    <created sym="C" id="1" />
-    <created sym="A" id="4" />
-    <created sym="B" id="4" />
+    <error>Invalid id</error>
+    <error>Invalid id</error>
+    <error>Invalid id</error>
+    <error>Invalid id</error>
 </results>

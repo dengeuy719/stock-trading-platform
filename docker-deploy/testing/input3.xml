@@ -4,5 +4,5 @@
   <query id="1"/>
   <query id="2"/>
   <query id="3"/>
-  <query id="4"/> <!--error-->
+  <query id="4"/> 
 </transactions>

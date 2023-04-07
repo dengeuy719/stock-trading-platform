@@ -1,10 +1,11 @@
 1000
 <?xml version="1.0" encoding="UTF-8"?>
 <transactions id="2">
+  <query id="1"/> 
+  <query id="2"/> 
   <query id="7"/>
   <query id="6"/>
-  <query id="1"/> <!--error-->
-  <query id="2"/> <!--error-->
-  <cancel id="8"/>
+  <cancel id="6"/>
   <cancel id="7"/>
+  <cancel id="8"/>
 </transactions>

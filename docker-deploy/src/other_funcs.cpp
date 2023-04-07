@@ -29,7 +29,7 @@ void matchBuyOrder(connection* C,long tran_id){
         << "ORDER BY TRAN_LIMIT_PRICE ASC, TRAN_TIME ASC;";
         result matching_res(W.exec(matching.str()));
         for(auto it = matching_res.begin(); it != matching_res.end()&&tran_amount>0; ++it){
-            cout << "tran_amount: "<<tran_amount << endl;
+            //cout << "tran_amount: "<<tran_amount << endl;
             long seller_tran_id = it[0].as<long>();
             string seller_act_id = it[1].as<string>();
             double seller_price = it[2].as<double>();
